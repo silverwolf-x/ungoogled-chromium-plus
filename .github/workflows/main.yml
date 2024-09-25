@@ -45,5 +45,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Starward_${{ matrix.configuration }}_${{ matrix.platform }}_${{ steps.sha.outputs.sha }}
-          path: build/Starward/
+          name: update
+          path: .
