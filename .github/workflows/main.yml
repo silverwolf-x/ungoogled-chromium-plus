@@ -76,5 +76,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.create_tag.outputs.new_tag }}
-          path: path/
+          path: .
           include-hidden-files: true
