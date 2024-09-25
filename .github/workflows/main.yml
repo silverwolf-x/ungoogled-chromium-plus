@@ -3,7 +3,7 @@ name: Sync and Publish Chromium Releases
 on:
   workflow_dispatch:
   repository_dispatch:
-    types: [release]
+    types: [push,release]
 
 jobs:
   sync_releases:
@@ -31,38 +31,3 @@ jobs:
           sudo apt-get install -y p7zip-full
           7z x chrome_plus-x64_arm64.7z mv chrome_plus
           
-      - name: Commit and push changes
-        run: |
-         git config --global user.name "Your Name"
-         git config --global user.email "your-email@example.com"
-         git add .
-         git commit -m "Sync releases from ungoogled-chromium-windows and chrome_plus"
-         git push origin main
-
-      - name: Get ungoogled-chromium-windows tag
-        id: get_ungoogled_tag
-        run: |
-          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')"
-
-      - name: Get chrome_plus tag
-        id: get_chrome_plus_tag
-        run: |
-          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')"
-
-      - name: Create new tag
-        id: create_tag
-        run: |
-          NEW_TAG="${{ steps.get_ungoogled_tag.outputs.tag }}+${{ steps.get_chrome_plus_tag.outputs.tag }}"
-          echo "::set-output name=new_tag::$NEW_TAG"
-
-      - name: Create release
-        uses: actions/create-release@latest
-        id: create_release
-        with:
-          tag_name: ${{ steps.create_tag.outputs.new_tag }}
-          release_name: "Release ${{ steps.create_tag.outputs.new_tag }}"
-          body: "Combined release of ungoogled-chromium-windows and chrome_plus"
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
