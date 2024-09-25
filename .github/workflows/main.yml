@@ -29,15 +29,15 @@ jobs:
       - name: Unzip chrome_plus x64_arm64.7z
         run: |
           sudo apt-get install -y p7zip-full
-          7z x chrome_plus-x64_arm64.7z -o chrome_plus/
+          7z x chrome_plus-x64_arm64.7z mv chrome_plus
           
-#      - name: Commit and push changes
-#        run: |
-#          git config --global user.name "Your Name"
- #         git config --global user.email "your-email@example.com"
-  #        git add .
-   #       git commit -m "Sync releases from ungoogled-chromium-windows and chrome_plus"
-    #      git push origin main
+      - name: Commit and push changes
+        run: |
+         git config --global user.name "Your Name"
+         git config --global user.email "your-email@example.com"
+         git add .
+         git commit -m "Sync releases from ungoogled-chromium-windows and chrome_plus"
+         git push origin main
 
       - name: Get ungoogled-chromium-windows tag
         id: get_ungoogled_tag
@@ -56,7 +56,8 @@ jobs:
           echo "::set-output name=new_tag::$NEW_TAG"
 
       - name: Create release
-        uses: actions/create-release@v1
+        uses: actions/create-release@latest
+        id: create_release
         with:
           tag_name: ${{ steps.create_tag.outputs.new_tag }}
           release_name: "Release ${{ steps.create_tag.outputs.new_tag }}"
