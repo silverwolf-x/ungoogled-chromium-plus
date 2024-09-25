@@ -33,7 +33,7 @@ jobs:
         run: |
           cp -r ungoogled-chromium_*/* x64/App/
           mv x64 ungoogled-chromium
-          # touch ungoogled-chromium/Data/.keep
+          touch ungoogled-chromium/Data/keep
       # - name: Create Release
       #   id: create_release
       #   uses: actions/create-release@latest
@@ -48,7 +48,8 @@ jobs:
       - name: Get ungoogled-chromium-windows tag
         id: get_ungoogled_tag
         run: |
-          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')"
+          # echo "::set-output name=tag::$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')" >> $GITHUB_OUTPUT
+          echo "{tag}={$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')}" >> $GITHUB_OUTPUT
 
       - name: Get chrome_plus tag
         id: get_chrome_plus_tag
@@ -76,5 +77,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.create_tag.outputs.new_tag }}
-          path: .
-          include-hidden-files: true
+          path: ungoogled-chromium
