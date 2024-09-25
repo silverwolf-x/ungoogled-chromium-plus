@@ -32,13 +32,18 @@ jobs:
           sudo apt-get install -y p7zip-full
           7z x chrome_plus-x64_arm64.7z mv chrome_plus
           
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@latest
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: ${{ github.ref }}
+      #     draft: false
+      #     prerelease: false
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: false
+          name: Starward_${{ matrix.configuration }}_${{ matrix.platform }}_${{ steps.sha.outputs.sha }}
+          path: build/Starward/
