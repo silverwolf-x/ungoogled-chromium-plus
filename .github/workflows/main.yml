@@ -23,18 +23,16 @@ jobs:
           asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
           wget -q $asset_url -O chrome_plus-x64_arm64.7z
 
-      - name: Unzip ungoogled-chromium-windows
-        run: |
-          unzip -o ungoogled-chromium-windows_x64.zip
-          rm ungoogled-chromium-windows_x64.zip
-
-
-      - name: Unzip chrome_plus x64_arm64.7z
+      - name: Unzip files
         run: |
           sudo apt-get install -y p7zip
-          # 7z x chrome_plus-x64_arm64.7z -o~ 
-          # rm chrome_plus-x64_arm64.7z
-          
+          7z x ungoogled-chromium-windows_x64.zip 
+          7z x chrome_plus-x64_arm64.7z x64  
+
+      - name: Copy files and zip
+        run: |
+          cp -r ungoogled-chromium_*/* x64/App/
+          mv x64 ungoogled-chromium
       # - name: Create Release
       #   id: create_release
       #   uses: actions/create-release@latest
@@ -77,4 +75,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.create_tag.outputs.new_tag }}
-          path: .
+          path: ungoogled-chromium
