@@ -48,18 +48,18 @@ jobs:
       - name: Get ungoogled-chromium-windows tag
         id: get_ungoogled_tag
         run: |
-          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')" >> $GITHUB_OUTPUT
+          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')"
 
       - name: Get chrome_plus tag
         id: get_chrome_plus_tag
         run: |
-          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')" >> $GITHUB_OUTPUT
+          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')"
 
       - name: Create new tag
         id: create_tag
         run: |
           NEW_TAG="${{ steps.get_ungoogled_tag.outputs.tag }}+${{ steps.get_chrome_plus_tag.outputs.tag }}"
-          echo "::set-output name=new_tag::$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "::set-output name=new_tag::$NEW_TAG"
 
       # - name: Create release
       #   uses: actions/create-release@v1
