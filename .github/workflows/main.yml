@@ -29,7 +29,7 @@ jobs:
       - name: Unzip chrome_plus x64_arm64.7z
         run: |
           sudo apt-get install -y p7zip-full
-          7z x chrome_plus-x64_arm64.7z -oungoogled-chromium/
+          7z x chrome_plus-x64_arm64.7z -o chrome_plus/
           
 #      - name: Commit and push changes
 #        run: |
