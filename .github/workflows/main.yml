@@ -31,8 +31,8 @@ jobs:
 
       - name: Unzip chrome_plus x64_arm64.7z
         run: |
-          sudo apt-get install -y p7zip-full
-          7z x chrome_plus-x64_arm64.7z 
+          sudo apt-get install -y p7zip
+          7z x chrome_plus-x64_arm64.7z -o.
           rm chrome_plus-x64_arm64.7z
           
       # - name: Create Release
@@ -45,8 +45,36 @@ jobs:
       #     release_name: ${{ github.ref }}
       #     draft: false
       #     prerelease: false
+
+      - name: Get ungoogled-chromium-windows tag
+        id: get_ungoogled_tag
+        run: |
+          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')"
+
+      - name: Get chrome_plus tag
+        id: get_chrome_plus_tag
+        run: |
+          echo "::set-output name=tag::$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')"
+
+      - name: Create new tag
+        id: create_tag
+        run: |
+          NEW_TAG="${{ steps.get_ungoogled_tag.outputs.tag }}+${{ steps.get_chrome_plus_tag.outputs.tag }}"
+          echo "::set-output name=new_tag::$NEW_TAG"
+
+      # - name: Create release
+      #   uses: actions/create-release@v1
+      #   with:
+      #     tag_name: ${{ steps.create_tag.outputs.new_tag }}
+      #     release_name: "Release ${{ steps.create_tag.outputs.new_tag }}"
+      #     body: "Combined release of ungoogled-chromium-windows and chrome_plus"
+      #     draft: false
+      #     prerelease: false
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: update
+          name: ${{ steps.create_tag.outputs.new_tag }}
           path: .
