@@ -7,7 +7,7 @@ on:
     types: [release]
 
 jobs:
-  sync_releases:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this repo
@@ -32,7 +32,7 @@ jobs:
       - name: Unzip chrome_plus x64_arm64.7z
         run: |
           sudo apt-get install -y p7zip
-          7z x chrome_plus-x64_arm64.7z -o.
+          7z x chrome_plus-x64_arm64.7z -ochrome_plus
           rm chrome_plus-x64_arm64.7z
           
       # - name: Create Release
