@@ -33,7 +33,7 @@ jobs:
         run: |
           cp -r ungoogled-chromium_*/* x64/App/
           mv x64 ungoogled-chromium
-          7z a ungoogled-chromium.zip ungoogled-chromium
+          # touch ungoogled-chromium/Data/.keep
       # - name: Create Release
       #   id: create_release
       #   uses: actions/create-release@latest
@@ -76,4 +76,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.create_tag.outputs.new_tag }}
-          path: path/to/artifact/
+          path: path/
+          include-hidden-files: true
