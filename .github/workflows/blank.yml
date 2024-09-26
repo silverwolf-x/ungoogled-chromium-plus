@@ -93,21 +93,22 @@ jobs:
       - name: check release_tag
         run: |
           echo "RELEASE_TAG=${{needs.build.outputs.release_tag}}" >> $GITHUB_ENV
+          run: ls -la
       # - name: download artifact
       #   uses: actions/download-artifact@v4
       #   with: 
       #     path: ungoogled-chromium
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-            # name: ${{ env.RELEASE_TAG }}
-            # tag_name: ${{ needs.build.outputs.release_tag }}
-            tag_name: 129.0.6668.58-1.1+1.00
-            # draft: ${{ github.event_name == 'pull_request' }}
-            body: |
-              testtest
-              test
-            files: |
-              ungoogled-chromium/**
-            generate_release_notes: true
-            fail_on_unmatched_files: true
+      # - name: Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #       # name: ${{ env.RELEASE_TAG }}
+      #       # tag_name: ${{ needs.build.outputs.release_tag }}
+      #       tag_name: 129.0.6668.58-1.1+1.00
+      #       # draft: ${{ github.event_name == 'pull_request' }}
+      #       body: |
+      #         testtest
+      #         test
+      #       files: |
+      #         ungoogled-chromium/**
+      #       generate_release_notes: true
+      #       fail_on_unmatched_files: true
