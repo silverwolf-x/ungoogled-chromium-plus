@@ -88,11 +88,15 @@ jobs:
       - name: check release_tag
         run: |
           echo "RELEASE_TAG=${{needs.build.outputs.release_tag}}" >> $GITHUB_ENV
+      - name: download artifact
+        uses: actions/download-artifact@4
+        with: 
+          path: ungoogled-chromium
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
             # name: ${{ env.RELEASE_TAG }}
-            # tag_name: ${{ env.RELEASE_TAG }}
+            # tag_name: ${{ needs.build.outputs.release_tag }}
             tag_name: 129.0.6668.58-1.1+1.00
             # draft: ${{ github.event_name == 'pull_request' }}
             body: |
@@ -104,7 +108,7 @@ jobs:
               And if you happen to use intel skylake chips (just like me), you can choose `bzImage-skylake` for best tuning.
               **NOTE for Win11**: the minimum requirement of Win11 ensures generic-x86_64-v3 support, so feel free to use `bzImage`.
             files: |
-              ungoogled-chromium/Data
+              ungoogled-chromium
             # token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
             # generate_release_notes: true
             fail_on_unmatched_files: true
