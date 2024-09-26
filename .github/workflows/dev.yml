@@ -1,9 +1,6 @@
-name: Sync and Publish Chromium Releases
+name: dev
 on:
   push:
-    branches: 
-      - main
-      - dev
   workflow_dispatch:
   repository_dispatch:
     types: [release]
