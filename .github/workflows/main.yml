@@ -1,7 +1,7 @@
 name: Sync and Publish Chromium Releases
 
 on:
-  push:
+  # push:
   workflow_dispatch:
   repository_dispatch:
     types: [release]

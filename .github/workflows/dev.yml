@@ -39,11 +39,12 @@ jobs:
           else
             echo "Versions are the same"
             echo "should_run=false" >> $GITHUB_ENV
+          fi
 
-      - name: Run job if versions differ or triggered by workflow_dispatch
-        if: env.should_run == 'true' || github.event_name == 'workflow_dispatch'
-        run: |
-          echo "Executing the main job..."
+      # - name: Run job if versions differ or triggered by workflow_dispatch
+      #   if: env.should_run == 'true' || github.event_name == 'workflow_dispatch'
+      #   run: |
+      #     echo "Executing the main job..."
         
   build:
     runs-on: ubuntu-latest
