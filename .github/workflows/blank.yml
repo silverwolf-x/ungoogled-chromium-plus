@@ -7,7 +7,7 @@ on:
     # - cron: '*/30 * * * *' # 每30分钟检查一次
 
 jobs:
-  build:
+  Check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -33,68 +33,70 @@ jobs:
             echo "Versions are the same"
             echo "should_run=false" >> $GITHUB_ENV
           fi
+  build:
+    runs-on: ubuntu-latest
+    if: env.should_run == 'true'
+    steps:
+      - name: Get the latest ungoogled-chromium-windows
+        run: |
+          asset_url=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.assets[] | select(.name | endswith("windows_x64.zip")) | .browser_download_url')
+          wget -q $asset_url -O ungoogled-chromium-windows_x64.zip
 
-  # build-files:
+      - name: Get the latest chrome_plus
+        run: |
+          asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
+          wget -q $asset_url -O chrome_plus-x64_arm64.7z
+
+      - name: Unzip files
+        run: |
+          sudo apt-get install -y p7zip
+          7z x ungoogled-chromium-windows_x64.zip 
+          7z x chrome_plus-x64_arm64.7z x64  
+
+      - name: Copy files and zip
+        run: |
+          cp -r ungoogled-chromium_*/* x64/App/
+          mv x64 ungoogled-chromium
+          touch ungoogled-chromium/Data/keep
+          # 删除Chromium多语言Pak
+          find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
+
+      - name: Get tags and create new tag
+        id: get_and_create_tag
+        run: |
+          UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
+          CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
+          NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
+          echo "RELEASE_TAG=$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ungoogled-chromium-${{ env.RELEASE_TAG }}
+          # 包括ungoogled-chromium这个文件夹
+          path: ungoogled-chromium
+  # release:
   #   runs-on: ubuntu-latest
-  #   if: ${{ env.should_run == 'true' }}
+  #   needs: build
   #   steps:
-  #     - name: Get the latest ungoogled-chromium-windows
-  #       run: |
-  #         asset_url=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.assets[] | select(.name | endswith("windows_x64.zip")) | .browser_download_url')
-  #         wget -q $asset_url -O ungoogled-chromium-windows_x64.zip
-
-  #     - name: Get the latest chrome_plus
-  #       run: |
-  #         asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
-  #         wget -q $asset_url -O chrome_plus-x64_arm64.7z
-
-  #     - name: Unzip files
-  #       run: |
-  #         sudo apt-get install -y p7zip
-  #         7z x ungoogled-chromium-windows_x64.zip 
-  #         7z x chrome_plus-x64_arm64.7z x64  
-
-  #     - name: Copy files and zip
-  #       run: |
-  #         cp -r ungoogled-chromium_*/* x64/App/
-  #         mv x64 ungoogled-chromium
-  #         touch ungoogled-chromium/Data/keep
-  #         # 删除Chromium多语言Pak
-  #         find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
-
-  #     - name: Get tags and create new tag
-  #       id: get_and_create_tag
-  #       run: |
-  #         UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
-  #         CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
-  #         NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
-  #         echo "RELEASE_TAG=$NEW_TAG" >> $GITHUB_ENV
-
-  #     - name: Upload Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ungoogled-chromium-${{ env.RELEASE_TAG }}
-  #         # 包括ungoogled-chromium这个文件夹
-  #         path: ungoogled-chromium
-
-  #   - name: Release
-  #     uses: softprops/action-gh-release@v2
-  #     with:
-  #         # name: ${{ env.RELEASE_TAG }}
-  #         # tag_name: ${{ env.RELEASE_TAG }}
-  #         tag_name: 129.0.6668.58-1.1+1.00
-  #       draft: ${{ github.event_name == 'pull_request' }}
-  #       target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
-  #       body: |
-  #         Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by [archlinuxcn](https://github.com/archlinuxcn/repo).
-  #         Provide builds on different archs with matrix build utility of GitHub Action.
-  #         * `bzImage-x64v{2,3,4}` for generic-x86_64-v{2,3,4}
-  #         * `bzImage-skylake` for intel skylake
-  #         To check supported x86_64 level on your machine, see [how to check supported x86_64 level of the hardware](https://unix.stackexchange.com/questions/631217/how-do-i-check-if-my-cpu-supports-x86-64-v2?msclkid=42ca61e9aa7111ecbcab7bb1a4204357).
-  #         And if you happen to use intel skylake chips (just like me), you can choose `bzImage-skylake` for best tuning.
-  #         **NOTE for Win11**: the minimum requirement of Win11 ensures generic-x86_64-v3 support, so feel free to use `bzImage`.
-  #       files: |
-  #         ungoogled-chromium
-  #       # token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-  #       # generate_release_notes: true
-  #       fail_on_unmatched_files: true
+    # - name: Release
+    #   uses: softprops/action-gh-release@v2
+    #   with:
+    #       # name: ${{ env.RELEASE_TAG }}
+    #       # tag_name: ${{ env.RELEASE_TAG }}
+    #       tag_name: 129.0.6668.58-1.1+1.00
+    #     draft: ${{ github.event_name == 'pull_request' }}
+    #     target_commitish: ${{ steps.fetch_commit_sha.outputs.sha }} 
+    #     body: |
+    #       Cutting edge XanMod kernel for WSL2, built with Clang ${{ needs.build.outputs.clang_version }} shipped by [archlinuxcn](https://github.com/archlinuxcn/repo).
+    #       Provide builds on different archs with matrix build utility of GitHub Action.
+    #       * `bzImage-x64v{2,3,4}` for generic-x86_64-v{2,3,4}
+    #       * `bzImage-skylake` for intel skylake
+    #       To check supported x86_64 level on your machine, see [how to check supported x86_64 level of the hardware](https://unix.stackexchange.com/questions/631217/how-do-i-check-if-my-cpu-supports-x86-64-v2?msclkid=42ca61e9aa7111ecbcab7bb1a4204357).
+    #       And if you happen to use intel skylake chips (just like me), you can choose `bzImage-skylake` for best tuning.
+    #       **NOTE for Win11**: the minimum requirement of Win11 ensures generic-x86_64-v3 support, so feel free to use `bzImage`.
+    #     files: |
+    #       ungoogled-chromium
+    #     # token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+    #     # generate_release_notes: true
+    #     fail_on_unmatched_files: true
