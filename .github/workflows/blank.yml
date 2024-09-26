@@ -95,7 +95,7 @@ jobs:
               test
             files: |
               ungoogled-chromium/Data/*
-            token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+            token: ${{ secrets.GITHUB_TOKEN }}
             generate_release_notes: true
             fail_on_unmatched_files: true
           
