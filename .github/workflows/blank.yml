@@ -74,11 +74,11 @@ jobs:
           NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
           echo "release_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
 
-      # - name: Upload Artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
-      #     path: ungoogled-chromium
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
+          path: ungoogled-chromium
     outputs: 
       release_tag: ${{ steps.get_and_create_tag.outputs.release_tag }}
   release:
