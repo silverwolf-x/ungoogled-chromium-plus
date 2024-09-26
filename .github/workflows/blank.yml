@@ -33,7 +33,7 @@ jobs:
             echo "Versions are the same"
             echo "SHOULD_RUN=2" >> $GITHUB_ENV
           fi
-           printf '%s\n' $SHOULD_RUN
+           printf '%s\n' "$SHOULD_RUN"
   # build:
   #   runs-on: ubuntu-latest
   #   needs: check
