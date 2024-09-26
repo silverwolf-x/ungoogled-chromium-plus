@@ -12,21 +12,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Get old version
-        id: get_old_version
-        run: |
-          old_version=$(curl -s https://api.github.com/repos/Silverwolf-x/ungoogled-chromium-plus/releases/latest | jq -r .tag_name || echo "111+0.9")
-          echo "OLD_VERSION=${old_version#*+}" >> $GITHUB_ENV
+        uses: actions/checkout@v4 
 
-      - name: Get new version
-        id: get_new_version
-        run: |
-          new_version=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r .tag_name)
-          echo "NEW_VERSION=${new_version}" >> $GITHUB_ENV
+      - name: Get current version
+        id: current_version
+        uses: pozetroninc/github-action-get-latest-release@master
+        with: 
+          repository: ${{ github.repository }}
+
+      - name: Get latest version
+        id: latest_version
+        uses: pozetroninc/github-action-get-latest-release@master
+        with: 
+          repository: Bush2021/chrome_plus
+
       - name: Compare versions
         id: compare_versions
         run: |
+          OLD_VERSION = ${{ steps.current_version.outputs.release }}
+          NEW_VERSION = ${{ steps.latest_version.outputs.release }}
+
           if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
             echo "Versions are different"
             echo "should_run=1" >> $GITHUB_OUTPUT
@@ -36,6 +41,7 @@ jobs:
           fi
     outputs: 
       should_run: ${{ steps.compare_versions.outputs.should_run }}
+
 
   build:
     runs-on: ubuntu-latest
@@ -52,20 +58,34 @@ jobs:
         run: |
           asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
           wget -q $asset_url -O chrome_plus-x64_arm64.7z
+      
+      - name: Get ungoogled-chromium-windows tag
+        id: ungoogled_tag
+        uses: pozetroninc/github-action-get-latest-release@master
+        with: 
+          repository: ungoogled-software/ungoogled-chromium-windows
 
-      - name: Unzip files
+      - name: Get chrome_plus tag
+        id: chrome_plus_tag
+        uses: pozetroninc/github-action-get-latest-release@master
+        with: 
+          repository: Bush2021/chrome_plus
+      - name: Create new tag
+        run: |
+          echo "release_tag=${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}" >> $GITHUB_ENV
+
+      - name: Unzip files 
         run: |
           sudo apt-get install -y p7zip
           7z x ungoogled-chromium-windows_x64.zip 
           7z x chrome_plus-x64_arm64.7z x64  
-      
-      - name: Get tags and create new tag
-        id: get_and_create_tag
-        run: |
-          UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
-          CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
-          NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
-          echo "release_tag=${NEW_TAG}" >> $GITHUB_ENV
+      # - name: Get tags and create new tag
+      #   id: get_and_create_tag
+      #   run: |
+      #     UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
+      #     CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
+      #     NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
+      #     echo "release_tag=${NEW_TAG}" >> $GITHUB_ENV
 
       - name: Copy files and zip
         run: |
@@ -76,28 +96,40 @@ jobs:
           # 删除Chromium多语言Pak
           find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
           # 显示版本名称
-          touch ungoogled-chromium/${{ env.release_tag }}
+          touch ungoogled-chromium/${{ outputs.release_tag }}
+          # 压缩为zip
+          zip -r ungoogled-chromium.zip ungoogled-chromium
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
           name: ungoogled-chromium
           # path: ungoogled-chromium
-          path: ungoogled-chromium/App/locales
+          path: ungoogled-chromium.zip
     outputs: 
-      release_tag: ${{ env.release_tag }}
+      release_tag: ${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}
 
-  publish-release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download package
-        uses: actions/download-artifact@v4
-        with:
-          name: ungoogled-chromium
-      - name: Display structure of downloaded files
-        run: ls -R
+
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
+  #         name: ungoogled-chromium
+  #         # path: ungoogled-chromium
+  #         path: ungoogled-chromium/App/locales
+  #   outputs: 
+  #     release_tag: ${{ env.release_tag }}
+
+  # publish-release:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Download package
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: ungoogled-chromium
+  #     - name: Display structure of downloaded files
+  #       run: ls -R
 
       # - name: Publish release
       #   id: publish
