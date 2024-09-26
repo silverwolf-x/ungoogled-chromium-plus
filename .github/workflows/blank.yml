@@ -9,6 +9,8 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    outputs: 
+      should_run: ${{ steps.compare_versions.outputs.should_run }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,12 +30,12 @@ jobs:
         run: |
           if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
             echo "Versions are different"
-            echo should_run=1 >> $GITHUB_OUTPUT
+            echo "should_run=1" >> $GITHUB_OUTPUT
           else
             echo "Versions are the same"
-            echo should_run=0 >> $GITHUB_OUTPUT
+            echo "should_run=0" >> $GITHUB_OUTPUT
           fi
-          echo "JOB_VAR=${{ steps.compare_versions.outputs.should_run }}"
+          echo "lll = ${{ steps.compare_versions.outputs.should_run }}"
 
   build:
     runs-on: ubuntu-latest
