@@ -10,7 +10,8 @@ ungoogle-chromium对于本人最大的有点是多功能搜索框搜索时可以
 
 ## git action笔记
 
-git action每一个job都是一个docker容器，因此跨job的文件需要通过artifact上传和下载，跨job的参数需要$GITHUB_OUTPUT来
+- git action每一个job都是一个docker容器，因此跨job的文件需要通过artifact上传和下载，跨job的参数需要$GITHUB_OUTPUT来
+- 注意注释的部分缩进要退到run里面，否则报错not valid
 我不知道为什么，在本地建立yml时gitaction的流程名字不是yml设置的
 
 ### 开头
@@ -69,3 +70,4 @@ else
     echo "should_run=0" >> $GITHUB_OUTPUT
 fi
 ```
+
