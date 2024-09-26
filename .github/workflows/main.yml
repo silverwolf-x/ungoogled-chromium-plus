@@ -34,6 +34,9 @@ jobs:
           cp -r ungoogled-chromium_*/* x64/App/
           mv x64 ungoogled-chromium
           touch ungoogled-chromium/Data/keep
+          # 删除Chromium多语言Pak
+          find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
+
       # - name: Create Release
       #   id: create_release
       #   uses: actions/create-release@latest
@@ -75,5 +78,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.create_tag.outputs.new_tag }}++
-          path: ungoogled-chromium
+          name: ${{ steps.create_tag.outputs.new_tag }}
+          # 包括ungoogled-chromium这个文件夹
+          path: ungoogled-chromium/** 
