@@ -19,6 +19,7 @@ jobs:
         uses: pozetroninc/github-action-get-latest-release@master
         with: 
           repository: ${{ github.repository }}
+        continue-on-error: true  # 允许在此步骤失败时继续执行后续步骤
 
       - name: Get latest version
         id: latest_version
@@ -72,10 +73,10 @@ jobs:
         uses: pozetroninc/github-action-get-latest-release@master
         with: 
           repository: Bush2021/chrome_plus
-          
-      - name: Create new tag
-        run: |
-          echo "release_tag=${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}" >> $GITHUB_ENV
+
+        # - name: Create new tag
+        #   run: |
+        #     echo "release_tag=${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}" >> $GITHUB_ENV
 
       - name: Unzip files 
         run: |
@@ -99,7 +100,7 @@ jobs:
           # 删除Chromium多语言Pak
           find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
           # 显示版本名称
-          touch ungoogled-chromium/${{ env.release_tag }}
+          touch ungoogled-chromium/${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}
           # 压缩为zip
           zip -r ungoogled-chromium.zip ungoogled-chromium
 
@@ -118,7 +119,8 @@ jobs:
           files: |
             ungoogled-chromium.zip
           body: |
-            ${{ env.release_tag }}
+          
+            ${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}
 
             Follow the update period of Chrome_plus
             
