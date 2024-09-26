@@ -108,6 +108,6 @@ jobs:
               testtest
               test
             files: |
-              ungoogled-chromium/Data/*
+              ungoogled-chromium/**
             generate_release_notes: true
             fail_on_unmatched_files: true
