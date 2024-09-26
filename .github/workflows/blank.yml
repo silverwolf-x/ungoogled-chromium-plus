@@ -86,6 +86,7 @@ jobs:
           path: ungoogled-chromium
     outputs: 
       release_tag: ${{ env.release_tag }}
+
   publish-release:
     needs: build
     runs-on: ubuntu-latest
@@ -98,7 +99,7 @@ jobs:
         id: publish
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.release_tag }}
+          tag_name: ${{ needs.build.outputs.release_tag }}
           fail_on_unmatched_files: true
           files: |
             ungoogled-chromium.zip
