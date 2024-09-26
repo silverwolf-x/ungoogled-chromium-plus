@@ -34,6 +34,9 @@ jobs:
             echo "SHOULD_RUN=2" >> $GITHUB_ENV
           fi
            printf '%s\n' "$SHOULD_RUN"
+
+        - name: Show env
+          run: echo "test"
   # build:
   #   runs-on: ubuntu-latest
   #   needs: check
