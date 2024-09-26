@@ -30,6 +30,8 @@ jobs:
         id: compare_versions
         run: |
           OLD_VERSION=${{ steps.current_version.outputs.release }}
+          # 如果 OLD_VERSION 是空的或未定义，则将其设置为 0
+          OLD_VERSION=${OLD_VERSION:-0}
           NEW_VERSION=${{ steps.latest_version.outputs.release }}
 
           if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
@@ -70,6 +72,7 @@ jobs:
         uses: pozetroninc/github-action-get-latest-release@master
         with: 
           repository: Bush2021/chrome_plus
+          
       - name: Create new tag
         run: |
           echo "release_tag=${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}" >> $GITHUB_ENV
@@ -91,9 +94,8 @@ jobs:
       - name: Copy files and zip
         run: |
           cp -r ungoogled-chromium_*/* x64/App/
+          # 重命名
           mv x64 ungoogled-chromium
-          # 保活Data
-          touch ungoogled-chromium/Data/keep
           # 删除Chromium多语言Pak
           find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
           # 显示版本名称
@@ -109,67 +111,18 @@ jobs:
 
       - name: Publish release
         id: publish
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2 
         with:
           tag_name: ${{ steps.chrome_plus_tag.outputs.release }}
           fail_on_unmatched_files: true
           files: |
             ungoogled-chromium.zip
           body: |
-            testtest
             ${{ env.release_tag }}
 
+            Follow the update period of Chrome_plus
+            
+            - [Chrome_plus](https://github.com/Bush2021/chrome_plus)
+            - [ungoogled-chromium-windows](https://github.com/ungoogled-software/ungoogled-chromium-windows)
+
           generate_release_notes: true
-  #     - name: Upload Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
-  #         name: ungoogled-chromium
-  #         # path: ungoogled-chromium
-  #         path: ungoogled-chromium/App/locales
-  #   outputs: 
-  #     release_tag: ${{ env.release_tag }}
-
-
-
-  # publish-release:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Download package
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: ungoogled-chromium
-  #     - name: Display structure of downloaded files
-  #       run: ls -R
-
-      # - name: Publish release
-      #   id: publish
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     tag_name: ${{ needs.build.outputs.release_tag }}
-      #     fail_on_unmatched_files: true
-      #     files: |
-      #       ungoogled-chromium.zip
-
-    
-      # - name: Download Artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: ungoogled-chromium
-      #     path: .
-      # - name: Release
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #       # name: ${{ env.RELEASE_TAG }}
-      #       tag_name: ${{ env.release_tag }}
-      #       # tag_name: 129.0.6668.58-1.1+1.00
-      #       draft : true
-      #       # draft: ${{ github.event_name == 'pull_request' }}
-      #       body: |
-      #         testtest
-      #         test
-      #       files: |
-      #         ungoogled-chromium.zip
-      #       generate_release_notes: true
-      #       fail_on_unmatched_files: true 
