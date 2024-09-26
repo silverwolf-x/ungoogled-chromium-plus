@@ -28,12 +28,11 @@ jobs:
         run: |
           if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
             echo "Versions are different"
-            echo "should_run=true" >> $GITHUB_ENV
+            echo "SHOULD_RUN=true" >> $GITHUB_ENV
           else
             echo "Versions are the same"
-            echo "should_run=false" >> $GITHUB_ENV
+            echo "SHOULD_RUN=false" >> $GITHUB_ENV
           fi
-          echo ${{ env.should_run }}
   # build:
   #   runs-on: ubuntu-latest
   #   needs: check
