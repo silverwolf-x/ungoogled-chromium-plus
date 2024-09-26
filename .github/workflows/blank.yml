@@ -77,7 +77,8 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
+          # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
+          name: ungoogled-chromium
           path: ungoogled-chromium
     outputs: 
       release_tag: ${{ steps.get_and_create_tag.outputs.release_tag }}
@@ -88,10 +89,10 @@ jobs:
       - name: check release_tag
         run: |
           echo "RELEASE_TAG=${{needs.build.outputs.release_tag}}" >> $GITHUB_ENV
-      - name: download artifact
-        uses: actions/download-artifact@v4
-        with: 
-          path: ungoogled-chromium
+      # - name: download artifact
+      #   uses: actions/download-artifact@v4
+      #   with: 
+      #     path: ungoogled-chromium
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
@@ -108,7 +109,7 @@ jobs:
               And if you happen to use intel skylake chips (just like me), you can choose `bzImage-skylake` for best tuning.
               **NOTE for Win11**: the minimum requirement of Win11 ensures generic-x86_64-v3 support, so feel free to use `bzImage`.
             files: |
-              ungoogled-chromium
+              ungoogled-chromium.zip
             # token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
             # generate_release_notes: true
             fail_on_unmatched_files: true
