@@ -104,13 +104,22 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ungoogled-chromium
-          # path: ungoogled-chromium
           path: ungoogled-chromium.zip
-    outputs: 
-      release_tag: ${{env.release_tag }}
+          compression-level: 0
 
+      - name: Publish release
+        id: publish
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.chrome_plus_tag.outputs.release }}
+          fail_on_unmatched_files: true
+          files: |
+            ungoogled-chromium.zip
+          body: |
+            testtest
+            ${{ env.release_tag }}
 
+          generate_release_notes: true
   #     - name: Upload Artifact
   #       uses: actions/upload-artifact@v4
   #       with:
@@ -120,6 +129,8 @@ jobs:
   #         path: ungoogled-chromium/App/locales
   #   outputs: 
   #     release_tag: ${{ env.release_tag }}
+
+
 
   # publish-release:
   #   needs: build
