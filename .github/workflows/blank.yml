@@ -16,22 +16,22 @@ jobs:
         id: get_old_version
         run: |
           old_version=$(curl -s https://api.github.com/repos/Silverwolf-x/ungoogled-chromium-plus/releases/latest | jq -r .tag_name || echo "111+0.9")
-          echo "OLD_VERSION=${old_version#*+}" >> $GITHUB_ENV
+          echo "OLD_VERSION=${old_version#*+}" | tee -a $GITHUB_ENV
 
       - name: Get new version
         id: get_new_version
         run: |
           new_version=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r .tag_name)
-          echo "NEW_VERSION=${new_version}" >> $GITHUB_ENV
+          echo "NEW_VERSION=${new_version}" | tee -a $GITHUB_ENV
       - name: Compare versions
         id: compare_versions
         run: |
           if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
             echo "Versions are different"
-            echo "SHOULD_RUN=1" >> $GITHUB_ENV
+            echo "SHOULD_RUN=1" | tee -a $GITHUB_ENV
           else
             echo "Versions are the same"
-            echo "SHOULD_RUN=" >> $GITHUB_ENV
+            echo "SHOULD_RUN=" | tee -a $GITHUB_ENV
           fi
 
       - name: Show env
@@ -47,7 +47,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: check
-    if: ${{ github.env.SHOULD_RUN }}
+    if: ${{ env.SHOULD_RUN }}
     steps:
       - name: Get the latest ungoogled-chromium-windows
         run: |
@@ -79,7 +79,7 @@ jobs:
           UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
           CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
           NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
-          echo "RELEASE_TAG=$NEW_TAG" >> $GITHUB_ENV
+          echo "RELEASE_TAG=$NEW_TAG" | tee -a $GITHUB_ENV
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
