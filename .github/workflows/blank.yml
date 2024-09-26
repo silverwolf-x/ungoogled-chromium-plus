@@ -7,7 +7,7 @@ on:
     # - cron: '*/30 * * * *' # 每30分钟检查一次
 
 jobs:
-  Check:
+  check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,6 +35,7 @@ jobs:
           fi
   build:
     runs-on: ubuntu-latest
+    needs: check
     if: ${{ env.should_run == 'true' }}
     steps:
       - name: Get the latest ungoogled-chromium-windows
