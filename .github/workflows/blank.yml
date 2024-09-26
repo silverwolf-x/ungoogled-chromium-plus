@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   # schedule:
     # - cron: '*/30 * * * *' # 每30分钟检查一次
-permissions:
+permissions: # release需要
   contents: write   # This is required to create/push the new git tag
 jobs:
   check:
@@ -58,22 +58,25 @@ jobs:
           sudo apt-get install -y p7zip
           7z x ungoogled-chromium-windows_x64.zip 
           7z x chrome_plus-x64_arm64.7z x64  
-
-      - name: Copy files and zip
-        run: |
-          cp -r ungoogled-chromium_*/* x64/App/
-          mv x64 ungoogled-chromium
-          touch ungoogled-chromium/Data/keep
-          # 删除Chromium多语言Pak
-          find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
-
+      
       - name: Get tags and create new tag
         id: get_and_create_tag
         run: |
           UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
           CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
           NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
-          echo "release_tag=${NEW_TAG}" >> $GITHUB_OUTPUT
+          echo "release_tag=${NEW_TAG}" >> $GITHUB_ENV
+
+      - name: Copy files and zip
+        run: |
+          cp -r ungoogled-chromium_*/* x64/App/
+          mv x64 ungoogled-chromium
+          # 保活Data
+          touch ungoogled-chromium/Data/keep
+          # 删除Chromium多语言Pak
+          find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
+          # 显示版本名称
+          touch ungoogled-chromium/${{ env.release_tag }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -81,50 +84,19 @@ jobs:
           # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
           name: ungoogled-chromium
           # path: ungoogled-chromium
-          path: ungoogled-chromium/Data
-      - name: List files
-        run: ls -la
+          path: ungoogled-chromium
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
             # name: ${{ env.RELEASE_TAG }}
-            # tag_name: ${{ needs.build.outputs.release_tag }}
-            tag_name: 129.0.6668.58-1.1+1.00
+            tag_name: ${{ env.release_tag }}
+            # tag_name: 129.0.6668.58-1.1+1.00
             # draft: ${{ github.event_name == 'pull_request' }}
             body: |
               testtest
               test
             files: |
-              ungoogled-chromium/Data/*
-            token: ${{ secrets.GITHUB_TOKEN }}
+              ungoogled-chromium
             generate_release_notes: true
-            fail_on_unmatched_files: true
-          
-    outputs: 
-      release_tag: ${{ steps.get_and_create_tag.outputs.release_tag }}
-  # release:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   steps:
-  #     - name: check release_tag
-  #       run: |
-  #         echo "RELEASE_TAG=${{needs.build.outputs.release_tag}}" >> $GITHUB_ENV
-  #         ls -la
-      # - name: download artifact
-      #   uses: actions/download-artifact@v4
-      #   with: 
-      #     path: ungoogled-chromium
-      # - name: Release
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #       # name: ${{ env.RELEASE_TAG }}
-      #       # tag_name: ${{ needs.build.outputs.release_tag }}
-      #       tag_name: 129.0.6668.58-1.1+1.00
-      #       # draft: ${{ github.event_name == 'pull_request' }}
-      #       body: |
-      #         testtest
-      #         test
-      #       files: |
-      #         ungoogled-chromium/**
-      #       generate_release_notes: true
-      #       fail_on_unmatched_files: true
+            fail_on_unmatched_files: true 
