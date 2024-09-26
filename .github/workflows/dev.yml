@@ -8,28 +8,21 @@ on:
     # - cron: '*/30 * * * *' # 每30分钟检查一次
 
 jobs:
-  check-versions: # 以更新较慢的chrome_plus作为基准
+  check-versions:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      # - name: Trust this directory
-      #   run: git config --global --add safe.directory '*'
       - name: Get old version
         id: get_old_version
         run: |
-          # 获取最新 tag 名称
           old_version=$(git describe --tags `git rev-list --tags --max-count=1`)
-          # 从 tag 中提取加号后面的部分
           echo "OLD_VERSION=${old_version#*+}" >> $GITHUB_ENV
-
       - name: Get new version
         id: get_new_version
         run: |
-          # 获取最新 release 信息
           new_version=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r .tag_name)
           echo "NEW_VERSION=${new_version}" >> $GITHUB_ENV
-
       - name: Compare versions
         id: compare_versions
         run: |
@@ -41,11 +34,6 @@ jobs:
             echo "should_run=false" >> $GITHUB_ENV
           fi
 
-      # - name: Run job if versions differ or triggered by workflow_dispatch
-      #   if: env.should_run == 'true' || github.event_name == 'workflow_dispatch'
-      #   run: |
-      #     echo "Executing the main job..."
-        
   build:
     runs-on: ubuntu-latest
     if: ${{ env.should_run == 'true' }}
