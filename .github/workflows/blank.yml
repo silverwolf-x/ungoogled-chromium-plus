@@ -15,7 +15,7 @@ jobs:
       - name: Get old version
         id: get_old_version
         run: |
-          old_version=$(git describe --tags `git rev-list --tags --max-count=1` || echo "111+1.0")
+          old_version=$(git describe --tags `git rev-list --tags --max-count=1` || echo "111+0.9")
           echo "OLD_VERSION=${old_version#*+}" >> $GITHUB_ENV
 
       - name: Get new version
@@ -28,10 +28,10 @@ jobs:
         run: |
           if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
             echo "Versions are different"
-            echo "SHOULD_RUN=true" >> $GITHUB_ENV
+            echo "SHOULD_RUN=1" >> $GITHUB_ENV
           else
             echo "Versions are the same"
-            echo "SHOULD_RUN=false" >> $GITHUB_ENV
+            echo "SHOULD_RUN=2" >> $GITHUB_ENV
           fi
   # build:
   #   runs-on: ubuntu-latest
