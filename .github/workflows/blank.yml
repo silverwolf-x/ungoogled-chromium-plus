@@ -65,7 +65,7 @@ jobs:
           UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
           CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
           NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
-          echo "release_tag=${NEW_TAG}" 
+          echo "release_tag=${NEW_TAG}" >> $GITHUB_ENV
 
       - name: Copy files and zip
         run: |
@@ -82,9 +82,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
+          name: ungoogled-chromium
           path: ungoogled-chromium
     outputs: 
-      release_tag: ${{ steps.get_and_create_tag.outputs.release_tag }}
+      release_tag: ${{ env.release_tag }}
   publish-release:
     needs: build
     runs-on: ubuntu-latest
