@@ -97,6 +97,6 @@ jobs:
               testtest
               test
             files: |
-              ungoogled-chromium
+              ungoogled-chromium/**
             generate_release_notes: true
             fail_on_unmatched_files: true 
