@@ -34,7 +34,7 @@ jobs:
             echo "should_run=false" >> $GITHUB_ENV
           fi
 
-  build:
+  build-files:
     runs-on: ubuntu-latest
     if: ${{ env.should_run == 'true' }}
     steps:
