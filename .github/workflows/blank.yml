@@ -65,7 +65,7 @@ jobs:
           UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
           CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
           NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
-          echo "release_tag=${NEW_TAG}" >> $GITHUB_ENV
+          echo "release_tag=${NEW_TAG}" 
 
       - name: Copy files and zip
         run: |
@@ -82,21 +82,44 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
-          name: ungoogled-chromium
-          # path: ungoogled-chromium
           path: ungoogled-chromium
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
+    outputs: 
+      release_tag: ${{ steps.get_and_create_tag.outputs.release_tag }}
+  publish-release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download package
+        uses: actions/download-artifact@v4
         with:
-            # name: ${{ env.RELEASE_TAG }}
-            tag_name: ${{ env.release_tag }}
-            # tag_name: 129.0.6668.58-1.1+1.00
-            # draft: ${{ github.event_name == 'pull_request' }}
-            body: |
-              testtest
-              test
-            files: |
-              ungoogled-chromium/**
-            generate_release_notes: true
-            fail_on_unmatched_files: true 
+          name: ungoogled-chromium
+      - name: Publish release
+        id: publish
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.release_tag }}
+          fail_on_unmatched_files: true
+          files: |
+            ungoogled-chromium.zip
+
+    
+      # - name: Download Artifact
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: ungoogled-chromium
+      #     path: .
+      # - name: Release
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #       # name: ${{ env.RELEASE_TAG }}
+      #       tag_name: ${{ env.release_tag }}
+      #       # tag_name: 129.0.6668.58-1.1+1.00
+      #       draft : true
+      #       # draft: ${{ github.event_name == 'pull_request' }}
+      #       body: |
+      #         testtest
+      #         test
+      #       files: |
+      #         ungoogled-chromium.zip
+      #       generate_release_notes: true
+      #       fail_on_unmatched_files: true 
