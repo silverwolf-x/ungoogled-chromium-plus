@@ -83,7 +83,8 @@ jobs:
         with:
           # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
           name: ungoogled-chromium
-          path: ungoogled-chromium
+          # path: ungoogled-chromium
+          path: ungoogled-chromium/App/locales
     outputs: 
       release_tag: ${{ env.release_tag }}
 
@@ -95,14 +96,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ungoogled-chromium
-      - name: Publish release
-        id: publish
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ needs.build.outputs.release_tag }}
-          fail_on_unmatched_files: true
-          files: |
-            ungoogled-chromium.zip
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      # - name: Publish release
+      #   id: publish
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     tag_name: ${{ needs.build.outputs.release_tag }}
+      #     fail_on_unmatched_files: true
+      #     files: |
+      #       ungoogled-chromium.zip
 
     
       # - name: Download Artifact
