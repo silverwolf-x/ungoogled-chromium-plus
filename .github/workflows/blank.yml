@@ -79,13 +79,14 @@ jobs:
           sudo apt-get install -y p7zip
           7z x ungoogled-chromium-windows_x64.zip 
           7z x chrome_plus-x64_arm64.7z x64  
-      # - name: Get tags and create new tag
-      #   id: get_and_create_tag
-      #   run: |
-      #     UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
-      #     CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
-      #     NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
-      #     echo "release_tag=${NEW_TAG}" >> $GITHUB_ENV
+
+          # - name: Get tags and create new tag
+          #   id: get_and_create_tag
+          #   run: |
+          #     UNGOOGLED_TAG=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.tag_name')
+          #     CHROME_PLUS_TAG=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.tag_name')
+          #     NEW_TAG="${UNGOOGLED_TAG}+${CHROME_PLUS_TAG}"
+          #     echo "release_tag=${NEW_TAG}" >> $GITHUB_ENV
 
       - name: Copy files and zip
         run: |
@@ -96,7 +97,7 @@ jobs:
           # 删除Chromium多语言Pak
           find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
           # 显示版本名称
-          touch ungoogled-chromium/${{ outputs.release_tag }}
+          touch ungoogled-chromium/${{ env.release_tag }}
           # 压缩为zip
           zip -r ungoogled-chromium.zip ungoogled-chromium
 
@@ -107,7 +108,7 @@ jobs:
           # path: ungoogled-chromium
           path: ungoogled-chromium.zip
     outputs: 
-      release_tag: ${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}
+      release_tag: ${{env.release_tag }}
 
 
   #     - name: Upload Artifact
