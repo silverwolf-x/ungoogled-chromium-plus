@@ -35,7 +35,7 @@ jobs:
           fi
   build:
     runs-on: ubuntu-latest
-    if: env.should_run == 'true'
+    if: ${{ env.should_run == 'true' }}
     steps:
       - name: Get the latest ungoogled-chromium-windows
         run: |
