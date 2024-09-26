@@ -5,7 +5,8 @@ on:
   workflow_dispatch:
   # schedule:
     # - cron: '*/30 * * * *' # 每30分钟检查一次
-
+permissions:
+  contents: write   # This is required to create/push the new git tag
 jobs:
   check:
     runs-on: ubuntu-latest
