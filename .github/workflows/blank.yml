@@ -83,7 +83,21 @@ jobs:
           path: ungoogled-chromium/Data
       - name: List files
         run: ls -la
- 
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+            # name: ${{ env.RELEASE_TAG }}
+            # tag_name: ${{ needs.build.outputs.release_tag }}
+            tag_name: 129.0.6668.58-1.1+1.00
+            # draft: ${{ github.event_name == 'pull_request' }}
+            body: |
+              testtest
+              test
+            files: |
+              ungoogled-chromium/Data/*
+            generate_release_notes: true
+            fail_on_unmatched_files: true
+          
     outputs: 
       release_tag: ${{ steps.get_and_create_tag.outputs.release_tag }}
   release:
