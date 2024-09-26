@@ -80,4 +80,4 @@ jobs:
         with:
           name: ${{ steps.create_tag.outputs.new_tag }}
           # 包括ungoogled-chromium这个文件夹
-          path: ungoogled-chromium/** 
+          path: ungoogled-chromium
