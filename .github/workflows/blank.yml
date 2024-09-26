@@ -29,8 +29,8 @@ jobs:
       - name: Compare versions
         id: compare_versions
         run: |
-          OLD_VERSION = ${{ steps.current_version.outputs.release }}
-          NEW_VERSION = ${{ steps.latest_version.outputs.release }}
+          OLD_VERSION=${{ steps.current_version.outputs.release }}
+          NEW_VERSION=${{ steps.latest_version.outputs.release }}
 
           if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
             echo "Versions are different"
