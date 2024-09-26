@@ -80,36 +80,34 @@ jobs:
           # name: ungoogled-chromium-${{ steps.get_and_create_tag.outputs.release_tag }}
           name: ungoogled-chromium
           path: ungoogled-chromium
+      - name: List files
+        run: ls -la
+ 
     outputs: 
       release_tag: ${{ steps.get_and_create_tag.outputs.release_tag }}
-  release:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: check release_tag
-        run: |
-          echo "RELEASE_TAG=${{needs.build.outputs.release_tag}}" >> $GITHUB_ENV
-      # - name: download artifact
-      #   uses: actions/download-artifact@v4
-      #   with: 
-      #     path: ungoogled-chromium
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-            # name: ${{ env.RELEASE_TAG }}
-            # tag_name: ${{ needs.build.outputs.release_tag }}
-            tag_name: 129.0.6668.58-1.1+1.00
-            # draft: ${{ github.event_name == 'pull_request' }}
-            body: |
-              Cutting edge XanMod kernel for WSL2, built with Clang shipped by [archlinuxcn](https://github.com/archlinuxcn/repo).
-              Provide builds on different archs with matrix build utility of GitHub Action.
-              * `bzImage-x64v{2,3,4}` for generic-x86_64-v{2,3,4}
-              * `bzImage-skylake` for intel skylake
-              To check supported x86_64 level on your machine, see [how to check supported x86_64 level of the hardware](https://unix.stackexchange.com/questions/631217/how-do-i-check-if-my-cpu-supports-x86-64-v2?msclkid=42ca61e9aa7111ecbcab7bb1a4204357).
-              And if you happen to use intel skylake chips (just like me), you can choose `bzImage-skylake` for best tuning.
-              **NOTE for Win11**: the minimum requirement of Win11 ensures generic-x86_64-v3 support, so feel free to use `bzImage`.
-            files: |
-              ungoogled-chromium.zip
-            # token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
-            # generate_release_notes: true
-            fail_on_unmatched_files: true
+  # release:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - name: check release_tag
+  #       run: |
+  #         echo "RELEASE_TAG=${{needs.build.outputs.release_tag}}" >> $GITHUB_ENV
+  #     # - name: download artifact
+  #     #   uses: actions/download-artifact@v4
+  #     #   with: 
+  #     #     path: ungoogled-chromium
+  #     - name: Release
+  #       uses: softprops/action-gh-release@v2
+  #       with:
+  #           # name: ${{ env.RELEASE_TAG }}
+  #           # tag_name: ${{ needs.build.outputs.release_tag }}
+  #           tag_name: 129.0.6668.58-1.1+1.00
+  #           # draft: ${{ github.event_name == 'pull_request' }}
+  #           body: |
+  #             testtest
+  #             test
+  #           files: |
+  #             ungoogled-chromium.zip
+  #           # token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+  #           # generate_release_notes: true
+  #           fail_on_unmatched_files: true
