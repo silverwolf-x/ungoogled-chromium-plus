@@ -4,7 +4,7 @@ on:
   push:
   workflow_dispatch:
   schedule:
-  - cron: '0 12 * * *'  # 每天正午12点触发
+  - cron: '0 12 * * *'  # UTC时间每天正午12点触发
 
 permissions: # release需要
   contents: write   # This is required to create/push the new git tag
@@ -32,8 +32,7 @@ jobs:
         id: compare_versions
         run: |
           OLD_VERSION=${{ steps.current_version.outputs.release }}
-          # 如果 OLD_VERSION 是空的或未定义，则将其设置为 0
-          OLD_VERSION=${OLD_VERSION:-0}
+          OLD_VERSION=${OLD_VERSION:-0} # 如果 OLD_VERSION 是空的或未定义，则将其设置为 0
           NEW_VERSION=${{ steps.latest_version.outputs.release }}
 
           if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
@@ -83,15 +82,15 @@ jobs:
 
       - name: Copy files and zip
         run: |
-          cp -r ungoogled-chromium_*/* x64/App/
-          # 重命名
-          mv x64 ungoogled-chromium
-          # 删除Chromium多语言Pak
-          find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} + 
-          # 显示版本名称
-          touch ungoogled-chromium/${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}
-          # 压缩为zip
-          zip -r ungoogled-chromium.zip ungoogled-chromium
+          cp -r ungoogled-chromium_*/* x64/App/ # 复制
+          
+          mv x64 ungoogled-chromium # 重命名
+          
+          find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} +  # 删除Chromium多语言Pak
+          
+          touch ungoogled-chromium/${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }} # 显示版本名称
+          
+          zip -r ungoogled-chromium.zip ungoogled-chromium # 压缩为zip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
