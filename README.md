@@ -1,4 +1,11 @@
 # ungoogle-chromium-windows 便携版，基于chrome_plus插件
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Silverwolf-x/ungoogled-chromium-plus/main.yml?event=schedule&label=UTC%2012%3A00%20schedule%20build)
+
+![GitHub Tag](https://img.shields.io/github/v/tag/Silverwolf-x/ungoogled-chromium-plus?logo=yaml&label=CI%20version)
+![GitHub Release](https://img.shields.io/github/v/release/Silverwolf-x/ungoogled-chromium-plus?logo=github)
+
+
+
 感谢[ungoogled-software](https://github.com/ungoogled-software/ungoogled-chromium-windows)和[chrome_plus](https://github.com/Bush2021/chrome_plus)项目的贡献。
 
 ungoogle-chromium对于本人最大的有点是多功能搜索框搜索时可以隐藏历史搜索记录，遥遥领先Chrome。但是，ungoogle-chromium缺不是便携版的形式，自动强制在C盘Local等地方储存垃圾。结合chrome_plus项目和教程[教你制作Chrome便携版](https://www.bilibili.com/video/BV1gw4m1v7Sg/)，借此机会尝试gitaction自动流进行复制整合。
