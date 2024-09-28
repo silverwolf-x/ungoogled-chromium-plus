@@ -39,8 +39,9 @@ jobs:
         run: |
           current_ungoogled_version=$(echo ${{ steps.current_version.outputs.release }} | cut -d'+' -f1)
           current_ungoogled_version=129.0.6668.58
-          current_chrome_plus_version=1.10.0
+
           current_chrome_plus_version=$(echo ${{ steps.current_version.outputs.release }} | cut -d'+' -f2)
+          current_chrome_plus_version=1.10.0
 
           latest_ungoogled_version=$(echo ${{ steps.ungoogled_tag.outputs.release }}| cut -d'-' -f1)
           latest_chrome_plus_version=${{ steps.chrome_plus_tag.outputs.release }}
