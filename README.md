@@ -1,8 +1,10 @@
 # ungoogle-chromium-windows 便携版，基于chrome_plus插件
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Silverwolf-x/ungoogled-chromium-plus/main.yml?event=schedule&label=UTC%2012%3A00%20schedule%20build)
 
-![GitHub Tag](https://img.shields.io/github/v/tag/Silverwolf-x/ungoogled-chromium-plus?logo=yaml&label=CI%20version)
-![GitHub Release](https://img.shields.io/github/v/release/Silverwolf-x/ungoogled-chromium-plus?logo=github)
+![GitHub Tag](https://img.shields.io/github/v/tag/Silverwolf-x/ungoogled-chromium-plus?filter=meta-*&logo=yaml&label=CI%20version)
+
+![GitHub Release](https://img.shields.io/github/v/release/Silverwolf-x/ungoogled-chromium-plus?include_prereleases&display_name=release&logo=googlechrome)
+
 
 
 
