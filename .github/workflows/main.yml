@@ -3,7 +3,7 @@ name: CI
 on:
   workflow_dispatch:
   schedule:
-  - cron: '0 12 * * *'  # UTC时间每天正午12点触发，北京时间每天20点触发
+  - cron: '0 10 * * *'  # UTC时间每天10点触发，北京时间每天18点触发
 
 permissions: # release需要
   contents: write   # This is required to create/push the new git tag
