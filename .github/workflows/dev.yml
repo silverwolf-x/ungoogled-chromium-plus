@@ -23,27 +23,48 @@ jobs:
         continue-on-error: true  # 允许在此步骤失败时继续执行后续步骤
 
       - name: Get latest chrome_plus version
-        id: latest_version
+        id: chrome_plus_tag
         uses: pozetroninc/github-action-get-latest-release@master
         with: 
           repository: Bush2021/chrome_plus
 
-      - name: Compare versions
-        id: compare_versions
+      - name: Get ungoogled-chromium-windows version
+        id: ungoogled_tag
+        uses: pozetroninc/github-action-get-latest-release@master
+        with: 
+          repository: ungoogled-software/ungoogled-chromium-windows
+      
+      - name: Get latest release
+        id: get_release
         run: |
-          OLD_VERSION=${{ steps.current_version.outputs.release }}
-          OLD_VERSION=${OLD_VERSION:-0} # 如果 OLD_VERSION 是空的或未定义，则将其设置为 0
-          NEW_VERSION=${{ steps.latest_version.outputs.release }}
+          latest_release=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest)
+          echo "Release info: $latest_release"
+          tag_name=$(echo $latest_release | jq -r .tag_name)
+          echo "Tag name: $tag_name"
+          A_version=$(echo $tag_name | cut -d'+' -f1)
+          B_version=$(echo $tag_name | cut -d'+' -f2)
+          echo "A version: $A_version"
+          echo "B version: $B_version"
+          echo "::set-output name=A_version::$A_version"
+          echo "::set-output name=B_version::$B_version"
+      # - name: Compare versions
+      #   id: compare_versions
+      #   run: |
+      #     current_ungoogled=$(echo $tag_name | cut -d'+' -f1)
+      #     CURR_VERSION=${{ steps.current_version.outputs.release }}
+      #     OLD_VERSION=${OLD_VERSION:-0} # 如果 OLD_VERSION 是空的或未定义，则将其设置为 0
+      #     NEW_VERSION=${{ steps.latest_version.outputs.release }}
 
-          if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
-            echo "Versions are different"
-            echo "should_run=1" >> $GITHUB_OUTPUT
-          else
-            echo "Versions are the same"
-            echo "should_run=0" >> $GITHUB_OUTPUT
-          fi
-    outputs: 
-      should_run: ${{ steps.compare_versions.outputs.should_run }}
+      #     if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
+      #       echo "Versions are different"
+      #       echo "should_run=1" >> $GITHUB_OUTPUT
+      #     else
+      #       echo "Versions are the same"
+      #       echo "should_run=0" >> $GITHUB_OUTPUT
+          # fi
+
+    # outputs: 
+    #   should_run: ${{ steps.compare_versions.outputs.should_run }}
 
 
   build:
