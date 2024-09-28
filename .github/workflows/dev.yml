@@ -46,50 +46,43 @@ jobs:
           
           echo "Current ungoogled version: $current_ungoogled_version"
           echo "Current Chrome+ version: $current_chrome_plus_version"
-          echo "Latest ungoogled version: $latest_ungoogled_version"
-          echo "Latest Chrome+ version: $latest_chrome_plus_version"
+          echo "Latest ungoogled version: $latest_ungoogled_version" >> $GITHUB_OUTPUT
+          echo "Latest Chrome+ version: $latest_chrome_plus_version" >> $GITHUB_OUTPUT
 
-      #     if [ "$OLD_VERSION" != "$NEW_VERSION" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
-      #       echo "Versions are different"
-      #       echo "should_run=1" >> $GITHUB_OUTPUT
-      #     else
-      #       echo "Versions are the same"
-      #       echo "should_run=0" >> $GITHUB_OUTPUT
-          # fi
+          if [ "${current_chrome_plus_version}" != "${latest_chrome_plus_version}" ] || [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
+            echo "build release"
+            echo "should_run=release" >> $GITHUB_OUTPUT
+          elif [ "${current_ungoogled_version}" != "${latest_ungoogled_version}" ]; then
+            echo "build prerelease"
+            echo "should_run=prerelease" >> $GITHUB_OUTPUT
+          else
+            echo "Versions are the same"
+            echo "should_run=" >> $GITHUB_OUTPUT
+          fi
 
-    # outputs: 
-    #   should_run: ${{ steps.compare_versions.outputs.should_run }}
+    outputs: 
+      should_run: ${{ steps.compare_versions.outputs.should_run }}
 
 
   build:
     runs-on: ubuntu-latest
     needs: check
     # 跨jobs变量不能用env
-    if: ${{ needs.check.outputs.should_run == 1 }}
+    if: ${{ needs.check.outputs.should_run == 'release' }}
     steps:
-      - name: Get the latest ungoogled-chromium-windows
+      - name: Get the latest ungoogled-chromium-windows and chrome_plus
         run: |
           asset_url=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.assets[] | select(.name | endswith("windows_x64.zip")) | .browser_download_url')
           wget -q $asset_url -O ungoogled-chromium-windows_x64.zip
 
-      - name: Get the latest chrome_plus
-        run: |
           asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
           wget -q $asset_url -O chrome_plus-x64_arm64.7z
-      
-      - name: Get ungoogled-chromium-windows tag
-        id: ungoogled_tag
-        uses: pozetroninc/github-action-get-latest-release@master
-        with: 
-          repository: ungoogled-software/ungoogled-chromium-windows
 
-      - name: Get chrome_plus tag
-        id: chrome_plus_tag
-        uses: pozetroninc/github-action-get-latest-release@master
-        with: 
-          repository: Bush2021/chrome_plus
+          echo "ungoogled_tag=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.name')" >> $GITHUB_ENV
 
-      - name: Unzip files 
+          echo "plus_tag=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.name')" >> $GITHUB_ENV
+
+      - name: Unzip need files 
         run: |
           sudo apt-get install -y p7zip
           7z x ungoogled-chromium-windows_x64.zip 
@@ -103,30 +96,34 @@ jobs:
           
           find ungoogled-chromium/App/locales ! -name 'zh-CN.pak' ! -name 'en-US.pak' -type f -exec rm -f {} +  # 删除Chromium多语言Pak
           
-          touch ungoogled-chromium/${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }} # 显示版本名称
+          touch ungoogled-chromium/${{ env.ungoogled_tag }}+${{ env.plus_tag }} # 显示版本名称
           
-          zip -r ungoogled-chromium.zip ungoogled-chromium # 压缩为zip
+          zip -r ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip ungoogled-chromium # 压缩为zip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          path: ungoogled-chromium.zip
+          name: ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
+          path: ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip
           compression-level: 0
 
       - name: Publish release
         id: publish
         uses: softprops/action-gh-release@v2 
         with:
-          tag_name: ${{ steps.chrome_plus_tag.outputs.release }}
+          name: ${{ env.ungoogled_tag }}
+          tag_name: ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
           fail_on_unmatched_files: true
           generate_release_notes: true
           files: |
-            ungoogled-chromium.zip
+            ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip
           body: |
 
-            ${{ steps.ungoogled_tag.outputs.release }}+${{ steps.chrome_plus_tag.outputs.release }}
+           ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
 
-            The CI follows the update period of Chrome_plus
+            The release follows the update period of Chrome_plus
+            
+            The prerelease follows the update period of ungoogled-chromium-windows
             
             - [Chrome_plus](https://github.com/Bush2021/chrome_plus)
             - [ungoogled-chromium-windows](https://github.com/ungoogled-software/ungoogled-chromium-windows)
