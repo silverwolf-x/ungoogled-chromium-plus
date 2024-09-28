@@ -1,6 +1,7 @@
-name: CI
+name: dev CI
 
 on:
+  push: 
   workflow_dispatch:
   schedule:
   - cron: '0 12 * * *'  # UTC时间每天正午12点触发
@@ -21,7 +22,7 @@ jobs:
           repository: ${{ github.repository }}
         continue-on-error: true  # 允许在此步骤失败时继续执行后续步骤
 
-      - name: Get latest version
+      - name: Get latest chrome_plus version
         id: latest_version
         uses: pozetroninc/github-action-get-latest-release@master
         with: 
