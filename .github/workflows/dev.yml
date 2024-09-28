@@ -46,6 +46,8 @@ jobs:
           # Find the latest release (whether pre-release or not)
           latest_release=$(echo "$releases" | jq '[.[] | {tag_name: .tag_name, prerelease: .prerelease}] | sort_by(.created_at) | reverse | .[0]')
 
+          echo "Release info: $latest_release"
+
           tag_name=$(echo $latest_release | jq -r .tag_name)
           echo "Tag name: $tag_name"
           A_version=$(echo $tag_name | cut -d'+' -f1)
@@ -54,6 +56,8 @@ jobs:
           echo "B version: $B_version"
           echo "::set-output name=A_version::$A_version"
           echo "::set-output name=B_version::$B_version"
+
+          echo "cc=${{ steps.current_version.outputs.release }}"
       # - name: Compare versions
       #   id: compare_versions
       #   run: |
