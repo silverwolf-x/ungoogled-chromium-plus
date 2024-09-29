@@ -3,8 +3,7 @@ name: CI
 on:
   workflow_dispatch:
   schedule:
-    # UTC时间每天10点触发，北京时间每天18点触发
-    - cron: '17 10 * * *' 
+    - cron: '20 10 * * *'  # UTC时间每天10:15触发，北京时间每天18:15触发
   
 
 permissions: # release需要
