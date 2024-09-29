@@ -3,7 +3,7 @@ name: CI
 on:
   # UTC时间每天10:00触发，北京时间每天18:00触发
   schedule:
-    - cron: '0 10 * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch:
   
 
