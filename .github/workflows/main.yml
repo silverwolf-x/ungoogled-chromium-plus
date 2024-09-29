@@ -1,10 +1,11 @@
 name: CI
 
 on:
+  # UTC时间每天10:00触发，北京时间每天18:00触发
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 10 * * *'
   workflow_dispatch:
-  # UTC时间每天10:15触发，北京时间每天18:15触发
+  
 
 
 permissions: # release需要
