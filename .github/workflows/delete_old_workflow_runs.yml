@@ -3,7 +3,6 @@ on:
   schedule:
     - cron: '0 0 1/15 * *'
   workflow_dispatch:
-
 jobs:
   del_runs:
     runs-on: ubuntu-latest
@@ -11,11 +10,28 @@ jobs:
       actions: write
       contents: read
     steps:
+      # git workflow删除没有artifact的action
+      - name: List and Delete Runs without Artifact
+        run: |
+          runs=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                      "https://api.github.com/repos/${{ github.repository }}/actions/runs")
+          
+          for run in $(echo "$runs" | jq -r '.workflow_runs[] | @base64'); do
+            run_id=$(echo "$run" | base64 --decode | jq -r '.id')
+            artifacts=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${run_id}/artifacts")
+            
+            if [[ $(echo "$artifacts" | jq '.artifacts | length') -eq 0 ]]; then
+              echo "Deleting run $run_id"
+              curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                   "https://api.github.com/repos/${{ github.repository }}/actions/runs/${run_id}"
+            fi
+          done
       - name: Delete Workflow Runs
+      # 保留30天
         uses: Mattraks/delete-workflow-runs@v2
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          retain_days: 7
-          keep_minimum_runs: 6
-
+          retain_days: 30
+          # keep_minimum_runs: 6
