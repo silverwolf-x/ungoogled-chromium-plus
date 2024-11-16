@@ -54,7 +54,7 @@ jobs:
           echo "Current ungoogled version: $current_ungoogled_version"
           echo "Current Chrome+ version: $current_chrome_plus_version"
           echo "Latest ungoogled version: $latest_ungoogled_version"
-          echo "Latest Chrome+ version: $latest_chrome_plus_version".
+          echo "Latest Chrome+ version: $latest_chrome_plus_version"
           echo "current_major_version: $current_major_version"
           echo "latest_major_version: $latest_major_version"
 
