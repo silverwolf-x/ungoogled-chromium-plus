@@ -41,20 +41,24 @@ jobs:
         id: compare_versions
         run: |
           current_ungoogled_version=$(echo ${{ steps.current_version.outputs.release }} | cut -d'+' -f1)
+          current_major_version=$(echo $current_ungoogled_version | cut -d'.' -f1)
           # current_ungoogled_version=129.0.6668.58
 
           current_chrome_plus_version=$(echo ${{ steps.current_version.outputs.release }} | cut -d'+' -f2)
           # current_chrome_plus_version=1.10.0
 
           latest_ungoogled_version=$(echo ${{ steps.ungoogled_tag.outputs.release }}| cut -d'-' -f1)
+          latest_major_version=$(echo $latest_ungoogled_version | cut -d'.' -f1)
           latest_chrome_plus_version=${{ steps.chrome_plus_tag.outputs.release }}
           
           echo "Current ungoogled version: $current_ungoogled_version"
           echo "Current Chrome+ version: $current_chrome_plus_version"
           echo "Latest ungoogled version: $latest_ungoogled_version"
-          echo "Latest Chrome+ version: $latest_chrome_plus_version"
+          echo "Latest Chrome+ version: $latest_chrome_plus_version".
+          echo "current_major_version: $current_major_version"
+          echo "latest_major_version: $latest_major_version"
 
-          if [ "${current_chrome_plus_version}" != "${latest_chrome_plus_version}" ] ; then
+          if [ "${current_chrome_plus_version}" != "${latest_chrome_plus_version}" ] || [ "${current_major_version}" != "${latest_major_version}" ]; then
             echo "build release"
             echo "should_run=release" >> $GITHUB_OUTPUT
           elif [ "${current_ungoogled_version}" != "${latest_ungoogled_version}" ]; then
@@ -126,9 +130,7 @@ jobs:
 
             ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
 
-            **The release follows the update period of Chrome_plus**
-
-            The prerelease follows the update period of ungoogled-chromium-windows
+            **The release follows the update f Chrome_plus and major version update of ungoogled-chromium-windows**
             
             - [Chrome_plus](https://github.com/Bush2021/chrome_plus)
             - [ungoogled-chromium-windows](https://github.com/ungoogled-software/ungoogled-chromium-windows)
@@ -148,9 +150,7 @@ jobs:
 
             ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
 
-            The release follows the update period of Chrome_plus
-
-            **The prerelease follows the update period of ungoogled-chromium-windows**
+            **The prerelease follows the update only of ungoogled-chromium-windows**
             
             - [Chrome_plus](https://github.com/Bush2021/chrome_plus)
             - [ungoogled-chromium-windows](https://github.com/ungoogled-software/ungoogled-chromium-windows)
