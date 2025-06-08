@@ -39,35 +39,34 @@ jobs:
 
       - name: Compare versions
         id: compare_versions
+        shell: bash
         run: |
-          current_ungoogled_version=$(echo ${{ steps.current_version.outputs.release }} | cut -d'+' -f1)
-          current_major_version=$(echo $current_ungoogled_version | cut -d'.' -f1)
-          # current_ungoogled_version=129.0.6668.58
+          cur_ver="${{ steps.current_version.outputs.release }}"
+          latest_ungoogled="${{ steps.ungoogled_tag.outputs.release }}"
+          latest_plus="${{ steps.chrome_plus_tag.outputs.release }}"
 
-          current_chrome_plus_version=$(echo ${{ steps.current_version.outputs.release }} | cut -d'+' -f2)
-          # current_chrome_plus_version=1.10.0
+          cur_ungoogled="${cur_ver%%+*}"
+          cur_major="${cur_ungoogled%%.*}"
+          cur_plus="${cur_ver#*+}"
 
-          latest_ungoogled_version=$(echo ${{ steps.ungoogled_tag.outputs.release }}| cut -d'-' -f1)
-          latest_major_version=$(echo $latest_ungoogled_version | cut -d'.' -f1)
-          latest_chrome_plus_version=${{ steps.chrome_plus_tag.outputs.release }}
-          
-          echo "current_ungoogled_version=$current_ungoogled_version"
-          echo "current_major_version=$current_major_version"
-          echo "current_chrome_plus_version=$current_chrome_plus_version"
-          echo "latest_ungoogled_version=$latest_ungoogled_version"
-          echo "latest_major_version=$latest_major_version" 
-          echo "latest_chrome_plus_version=$latest_chrome_plus_version" 
+          latest_ungoogled_base="${latest_ungoogled%%-*}"
+          latest_major="${latest_ungoogled_base%%.*}"
 
-          if [ "${current_chrome_plus_version}" != "${latest_chrome_plus_version}" ] || [ "${current_major_version}" != "${latest_major_version}" ]; then
-            echo "build release"
-            echo "should_run=release" >> $GITHUB_OUTPUT
-          elif [ "${current_ungoogled_version}" != "${latest_ungoogled_version}" ]; then
-            echo "build prerelease"
-            echo "should_run=prerelease" >> $GITHUB_OUTPUT
+          echo "cur_ungoogled=$cur_ungoogled"
+          echo "cur_major=$cur_major"
+          echo "cur_plus=$cur_plus"
+          echo "latest_ungoogled=$latest_ungoogled_base"
+          echo "latest_major=$latest_major"
+          echo "latest_plus=$latest_plus"
+
+          if [[ "$cur_plus" != "$latest_plus" || "$cur_major" != "$latest_major" ]]; then
+            echo "should_run=release" >> "$GITHUB_OUTPUT"
+          elif [[ "$cur_ungoogled" != "$latest_ungoogled_base" ]]; then
+            echo "should_run=prerelease" >> "$GITHUB_OUTPUT"
           else
-            echo "Versions are the same"
-            echo "should_run=" >> $GITHUB_OUTPUT
+            echo "should_run=" >> "$GITHUB_OUTPUT"
           fi
+
 
     outputs: 
       should_run: ${{ steps.compare_versions.outputs.should_run }}
@@ -81,12 +80,6 @@ jobs:
     # 跨jobs变量不能用env
     if: ${{ needs.check.outputs.should_run }}
     steps:
-      - name: echo all needs.check.outputs
-        run: |
-          echo "Current job should run: ${{ needs.check.outputs.should_run }}"
-          echo "Chrome Plus tag: ${{ needs.check.outputs.chrome_plus_tag }}"
-          echo "Ungoogled tag: ${{ needs.check.outputs.ungoogled_tag }}"
-
       - name: get latest release download of ungoogled-chromium-windows
         uses: robinraju/release-downloader@main
         with:
@@ -106,30 +99,17 @@ jobs:
           echo "当前目录内容如下："
           ls -lh
 
-
-      # - name: get latest release download of chrome_plus and prerelease
-      #   run: |
-      #     asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
-      #     wget -q $asset_url -O chrome_plus-x64_arm64.7z
-
-      # - name: Get the latest ungoogled-chromium-windows and chrome_plus
-      #   run: |
-      #     asset_url=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.assets[] | select(.name | endswith("windows_x64.zip")) | .browser_download_url')
-      #     wget -q $asset_url -O ungoogled-chromium-windows_x64.zip
-
-      #     asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
-      #     wget -q $asset_url -O chrome_plus-x64_arm64.7z
-
-      #     echo "ungoogled_tag=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.name'| cut -d'-' -f1)" >> $GITHUB_ENV
-
-      #     echo "plus_tag=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.name')" >> $GITHUB_ENV
-
       - name: Unzip need files 
         run: |
           sudo apt-get install -y p7zip
-          7z x ungoogled-chromium-windows_x64.zip 
-          7z x chrome_plus-x64_arm64.7z x64  
-
+          7z x ungoogled-chromium_${{ steps.ungoogled_tag.outputs.release }}_windows_x64.zip
+          7z x Chrome++_${{ steps.chrome_plus_tag.outputs.release }}_x86_x64_arm64.7z x64
+      - name: Set environment variables
+        run: |
+          raw_tag="${{ steps.ungoogled_tag.outputs.release }}"
+          clean_tag="${raw_tag%%-*}"
+          echo "ungoogled_tag=$clean_tag" >> $GITHUB_ENV
+          echo "plus_tag=${{ steps.chrome_plus_tag.outputs.release }}" >> $GITHUB_ENV
       - name: Copy files and zip
         run: |
           cp -r ungoogled-chromium_*/* x64/App/ # 复制
@@ -150,7 +130,7 @@ jobs:
           compression-level: 0
 
       - name: Publish release
-        if: ${{ needs.check.outputs.should_run == 'release' }}
+        if: ${{ needs.check.outputs.should_run == 'release' && github.event_name != 'workflow_dispatch' }}
         uses: softprops/action-gh-release@master
         with:
           name: ${{ env.ungoogled_tag }}
@@ -163,13 +143,13 @@ jobs:
 
             ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
 
-            **The release follows the update f Chrome_plus and major version update of ungoogled-chromium-windows**
+            **The release follows the update of Chrome_plus and major version update of ungoogled-chromium-windows**
             
             - [Chrome_plus](https://github.com/Bush2021/chrome_plus)
             - [ungoogled-chromium-windows](https://github.com/ungoogled-software/ungoogled-chromium-windows)
 
       - name: Publish prerelease
-        if: ${{ needs.check.outputs.should_run == 'prerelease' }}
+        if: ${{ needs.check.outputs.should_run == 'prerelease' && github.event_name != 'workflow_dispatch' }}
         uses: softprops/action-gh-release@master
         with:
           prerelease: true
@@ -188,4 +168,22 @@ jobs:
             - [Chrome_plus](https://github.com/Bush2021/chrome_plus)
             - [ungoogled-chromium-windows](https://github.com/ungoogled-software/ungoogled-chromium-windows)
 
-          
+      - name: Publish draft (manual trigger)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: softprops/action-gh-release@master
+        with:
+          draft: true
+          name: ${{ env.ungoogled_tag }}
+          tag_name: ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
+          fail_on_unmatched_files: true
+          generate_release_notes: true
+          files: ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip
+          body: |
+            ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
+
+            Manually triggered draft release.
+
+            Sources:
+            - [Chrome_plus](https://github.com/Bush2021/chrome_plus)
+            - [ungoogled-chromium-windows](https://github.com/ungoogled-software/ungoogled-chromium-windows)
+
