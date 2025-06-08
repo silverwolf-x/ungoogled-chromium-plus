@@ -136,7 +136,6 @@ jobs:
           name: ${{ env.ungoogled_tag }}
           tag_name: ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
           fail_on_unmatched_files: true
-          generate_release_notes: true
           files: |
             ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip
           body: |
@@ -156,7 +155,6 @@ jobs:
           name: ${{ env.ungoogled_tag }}
           tag_name: ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
           fail_on_unmatched_files: true
-          generate_release_notes: true
           files: |
             ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip
           body: |
@@ -176,7 +174,6 @@ jobs:
           name: ${{ env.ungoogled_tag }}
           tag_name: ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
           fail_on_unmatched_files: true
-          generate_release_notes: true
           files: ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip
           body: |
             ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
