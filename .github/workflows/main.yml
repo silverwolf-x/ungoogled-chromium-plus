@@ -14,9 +14,10 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
+      
       - name: Checkout code
-        uses: actions/checkout@v4 
-
+        uses: actions/checkout@main 
+      
       - name: Get current version
         id: current_version
         uses: pozetroninc/github-action-get-latest-release@master
@@ -35,7 +36,6 @@ jobs:
         uses: pozetroninc/github-action-get-latest-release@master
         with: 
           repository: ungoogled-software/ungoogled-chromium-windows
-      
 
       - name: Compare versions
         id: compare_versions
@@ -51,12 +51,12 @@ jobs:
           latest_major_version=$(echo $latest_ungoogled_version | cut -d'.' -f1)
           latest_chrome_plus_version=${{ steps.chrome_plus_tag.outputs.release }}
           
-          echo "Current ungoogled version: $current_ungoogled_version"
-          echo "Current Chrome+ version: $current_chrome_plus_version"
-          echo "Latest ungoogled version: $latest_ungoogled_version"
-          echo "Latest Chrome+ version: $latest_chrome_plus_version"
-          echo "current_major_version: $current_major_version"
-          echo "latest_major_version: $latest_major_version"
+          echo "current_ungoogled_version=$current_ungoogled_version"
+          echo "current_major_version=$current_major_version"
+          echo "current_chrome_plus_version=$current_chrome_plus_version"
+          echo "latest_ungoogled_version=$latest_ungoogled_version"
+          echo "latest_major_version=$latest_major_version" 
+          echo "latest_chrome_plus_version=$latest_chrome_plus_version" 
 
           if [ "${current_chrome_plus_version}" != "${latest_chrome_plus_version}" ] || [ "${current_major_version}" != "${latest_major_version}" ]; then
             echo "build release"
@@ -71,6 +71,8 @@ jobs:
 
     outputs: 
       should_run: ${{ steps.compare_versions.outputs.should_run }}
+      chrome_plus_tag: ${{ steps.chrome_plus_tag.outputs.release }}
+      ungoogled_tag: ${{ steps.ungoogled_tag.outputs.release }}
 
 
   release:
@@ -79,17 +81,48 @@ jobs:
     # 跨jobs变量不能用env
     if: ${{ needs.check.outputs.should_run }}
     steps:
-      - name: Get the latest ungoogled-chromium-windows and chrome_plus
+      - name: echo all needs.check.outputs
         run: |
-          asset_url=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.assets[] | select(.name | endswith("windows_x64.zip")) | .browser_download_url')
-          wget -q $asset_url -O ungoogled-chromium-windows_x64.zip
+          echo "Current job should run: ${{ needs.check.outputs.should_run }}"
+          echo "Chrome Plus tag: ${{ needs.check.outputs.chrome_plus_tag }}"
+          echo "Ungoogled tag: ${{ needs.check.outputs.ungoogled_tag }}"
 
-          asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
-          wget -q $asset_url -O chrome_plus-x64_arm64.7z
+      - name: get latest release download of ungoogled-chromium-windows
+        uses: robinraju/release-downloader@main
+        with:
+          repository: ungoogled-software/ungoogled-chromium-windows
+          tag: ${{ needs.check.outputs.ungoogled_tag }}
+          fileName: '*windows_x64.zip'
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: get latest release download of chrome_plus
+        uses: robinraju/release-downloader@main
+        with:
+          repository: Bush2021/chrome_plus
+          tag: ${{ needs.check.outputs.chrome_plus_tag }}
+          fileName: '*x86_x64_arm64.7z'
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: List files in workspace
+        run: |
+          echo "当前目录内容如下："
+          ls -lh
 
-          echo "ungoogled_tag=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.name'| cut -d'-' -f1)" >> $GITHUB_ENV
 
-          echo "plus_tag=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.name')" >> $GITHUB_ENV
+      # - name: get latest release download of chrome_plus and prerelease
+      #   run: |
+      #     asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
+      #     wget -q $asset_url -O chrome_plus-x64_arm64.7z
+
+      # - name: Get the latest ungoogled-chromium-windows and chrome_plus
+      #   run: |
+      #     asset_url=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.assets[] | select(.name | endswith("windows_x64.zip")) | .browser_download_url')
+      #     wget -q $asset_url -O ungoogled-chromium-windows_x64.zip
+
+      #     asset_url=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_x64_arm64.7z")) | .browser_download_url')
+      #     wget -q $asset_url -O chrome_plus-x64_arm64.7z
+
+      #     echo "ungoogled_tag=$(curl -s https://api.github.com/repos/ungoogled-software/ungoogled-chromium-windows/releases/latest | jq -r '.name'| cut -d'-' -f1)" >> $GITHUB_ENV
+
+      #     echo "plus_tag=$(curl -s https://api.github.com/repos/Bush2021/chrome_plus/releases/latest | jq -r '.name')" >> $GITHUB_ENV
 
       - name: Unzip need files 
         run: |
@@ -110,7 +143,7 @@ jobs:
           zip -r ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip ungoogled-chromium # 压缩为zip
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@main
         with:
           name: ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
           path: ungoogled-chromium_${{ env.ungoogled_tag }}_windows_x64.zip
@@ -118,7 +151,7 @@ jobs:
 
       - name: Publish release
         if: ${{ needs.check.outputs.should_run == 'release' }}
-        uses: softprops/action-gh-release@v2 
+        uses: softprops/action-gh-release@master
         with:
           name: ${{ env.ungoogled_tag }}
           tag_name: ${{ env.ungoogled_tag }}+${{ env.plus_tag }}
@@ -137,7 +170,7 @@ jobs:
 
       - name: Publish prerelease
         if: ${{ needs.check.outputs.should_run == 'prerelease' }}
-        uses: softprops/action-gh-release@v2 
+        uses: softprops/action-gh-release@master
         with:
           prerelease: true
           name: ${{ env.ungoogled_tag }}
