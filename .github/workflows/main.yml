@@ -30,12 +30,14 @@ jobs:
         uses: pozetroninc/github-action-get-latest-release@master
         with: 
           repository: Bush2021/chrome_plus
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get ungoogled-chromium-windows version
         id: ungoogled_tag
         uses: pozetroninc/github-action-get-latest-release@master
         with: 
           repository: ungoogled-software/ungoogled-chromium-windows
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compare versions
         id: compare_versions
