@@ -12,3 +12,8 @@ ungoogle-chromium对于本人最大的优点是多功能搜索框搜索时可以
 - release依据chrome_plus的周期更新发布，prerelease依据ungoogle-chromium-windows的更新周期发布
 - 每天北京时间08:00自动执行工作流，视Git ACtion排队可能会有所延迟
 
+
+## 许可证
+
+本项目采用 GPL-3.0 许可证发布，详情见根目录的 LICENSE 文件。
+
